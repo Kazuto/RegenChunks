@@ -67,21 +67,21 @@ public class ChunkRegeneration {
             removeEntitiesFromChunk(level, chunkPos);
         }
 
-        // Get the chunk generator
-        var generator = chunkSource.getGenerator();
-        var randomState = chunkSource.randomState();
-
-        // Get existing chunk to replace
+        // Get existing chunk
         LevelChunk existingChunk = chunkSource.getChunk(chunkPos.x(), chunkPos.z(), false);
         if (existingChunk == null) {
             ResetChunks.LOGGER.warn("Chunk {} not loaded", chunkPos);
             return CompletableFuture.completedFuture(null);
         }
 
-        // Clear existing blocks
+        // Get generator and state
+        var generator = chunkSource.getGenerator();
+        var randomState = chunkSource.randomState();
+
+        // Clear existing chunk data
         clearChunkBlocks(existingChunk);
 
-        // Generate fresh terrain using the generator (async)
+        // Regenerate using the full chunk generation pipeline
         return generator.fillFromNoise(
             net.minecraft.world.level.levelgen.blending.Blender.empty(),
             randomState,
@@ -97,17 +97,37 @@ public class ChunkRegeneration {
                     generatedChunk
                 );
 
-                // Try to apply decoration (ores, features)
-                // This requires WorldGenLevel, so we try ServerLevel and catch if it fails
-                try {
-                    generator.applyBiomeDecoration(level, generatedChunk, level.structureManager());
-                    ResetChunks.LOGGER.debug("Applied biome decoration (ores, features) to chunk {}", chunkPos);
-                } catch (Exception e) {
-                    ResetChunks.LOGGER.warn("Could not apply biome decoration - ores and features will be missing: {}", e.getMessage());
+                // Apply surface using the testing method that works with ServerLevel
+                if (generator instanceof net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator noiseGenerator) {
+                    try {
+                        var context = new net.minecraft.world.level.levelgen.WorldGenerationContext(noiseGenerator, level);
+                        var biomeRegistry = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME);
+
+                        noiseGenerator.buildSurface(
+                            generatedChunk,
+                            context,
+                            randomState,
+                            level.structureManager(),
+                            level.getBiomeManager(),
+                            biomeRegistry,
+                            net.minecraft.world.level.levelgen.blending.Blender.empty()
+                        );
+                        ResetChunks.LOGGER.debug("Applied buildSurface (with deepslate) for chunk {}", chunkPos);
+                    } catch (Exception e) {
+                        ResetChunks.LOGGER.warn("buildSurface failed: {}, using fallback", e.getMessage());
+                        applySurfaceRules(existingChunk, level);
+                    }
+                } else {
+                    applySurfaceRules(existingChunk, level);
                 }
 
-                // Apply surface rules (grass/dirt on top)
-                applySurfaceRules(existingChunk, level);
+                // Apply features (ores, etc.)
+                try {
+                    generator.applyBiomeDecoration(level, generatedChunk, level.structureManager());
+                    ResetChunks.LOGGER.debug("Applied biome decoration for chunk {}", chunkPos);
+                } catch (Exception e) {
+                    ResetChunks.LOGGER.warn("Biome decoration failed: {}", e.getMessage());
+                }
 
                 // Update clients
                 sendChunkToPlayers(level, existingChunk);
@@ -118,13 +138,7 @@ public class ChunkRegeneration {
                 ResetChunks.LOGGER.error("Failed to finalize chunk {}: {}", chunkPos, e.getMessage(), e);
             }
         }, level.getServer()).exceptionally(throwable -> {
-            ResetChunks.LOGGER.error("fillFromNoise failed for chunk {}, using fallback: {}", chunkPos, throwable.getMessage());
-            try {
-                fillChunkWithTerrain(existingChunk, level);
-                sendChunkToPlayers(level, existingChunk);
-            } catch (Exception e) {
-                ResetChunks.LOGGER.error("Fallback failed for chunk {}: {}", chunkPos, e.getMessage());
-            }
+            ResetChunks.LOGGER.error("Chunk generation failed: {}", throwable.getMessage());
             return null;
         });
     }
