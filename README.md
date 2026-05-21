@@ -1,4 +1,4 @@
-# ResetChunks
+# RegenChunks
 
 A NeoForge mod that allows server operators to regenerate chunks in Minecraft, perfect for fixing corrupted terrain, resetting resource areas, or refreshing landscapes.
 
@@ -13,8 +13,8 @@ A NeoForge mod that allows server operators to regenerate chunks in Minecraft, p
 
 ## Requirements
 
-- **Minecraft Version:** 26.1.x
-- **Modloader:** NeoForge 26.1+
+- **Minecraft Version:** 26.1.2+
+- **Modloader:** NeoForge 26.1.3.60-beta+
 - **Side:** Server-side (works on dedicated servers and single-player)
 
 ## Installation
@@ -22,14 +22,14 @@ A NeoForge mod that allows server operators to regenerate chunks in Minecraft, p
 1. Download the latest release from the [Releases](../../releases) page
 2. Place the `.jar` file in your `mods` folder
 3. Restart your Minecraft server or game
-4. Verify installation with `/resetchunks` command
+4. Verify installation with `/regenchunks` command
 
 ## Usage
 
 ### Command
 
 ```
-/resetchunks <diameter>
+/regenchunks <diameter>
 ```
 
 ### Parameters
@@ -42,16 +42,16 @@ A NeoForge mod that allows server operators to regenerate chunks in Minecraft, p
 
 ```bash
 # Regenerate current chunk only
-/resetchunks 0
+/regenchunks 0
 
 # Regenerate a 3×3 chunk area (1 chunk in each direction + center)
-/resetchunks 1
+/regenchunks 1
 
 # Regenerate a 11×11 chunk area (5 chunks in each direction + center)
-/resetchunks 5
+/regenchunks 5
 
 # Regenerate a 21×21 chunk area (10 chunks in each direction + center)
-/resetchunks 10
+/regenchunks 10
 ```
 
 ### Calculating Area Size
@@ -159,8 +159,8 @@ Only server operators with **permission level 2 or higher** can use this command
 ### Building from Source
 
 ```bash
-git clone https://github.com/Kazuto/resetchunks.git
-cd resetchunks
+git clone https://github.com/Kazuto/regenchunks.git
+cd regenchunks
 ./gradlew build
 ```
 

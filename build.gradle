@@ -1,0 +1,118 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev' version '7.1.21'
+    id 'com.modrinth.minotaur' version '2.+'
+    id 'net.darkhax.curseforgegradle' version '1.1.18'
+}
+
+version = '1.0.0'
+group = 'com.kazuto.regenchunks'
+
+base {
+    archivesName = 'regenchunks'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+
+        modSource project.sourceSets.main
+    }
+
+    configureEach {
+        workingDirectory project.file('run')
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neo_version}"
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version   : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version         : neo_version,
+            neo_version_range   : neo_version_range,
+            loader_version_range: loader_version_range,
+            mod_id              : mod_id,
+            mod_name            : mod_name,
+            mod_license         : mod_license,
+            mod_version         : version,
+            mod_authors         : mod_authors,
+            mod_description     : mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/repo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// CurseForge Publishing
+task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    apiToken = System.getenv('CURSEFORGE_TOKEN') ?: 'unset'
+
+    def mainFile = upload(1549701, jar)
+    mainFile.changelogType = 'markdown'
+    mainFile.changelog = file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'See GitHub releases for changes'
+    mainFile.releaseType = 'beta'
+    mainFile.addJavaVersion('Java 25')
+    mainFile.addGameVersion('26.1.2')
+    mainFile.addModLoader('NeoForge')
+
+    doFirst {
+        if (apiToken == 'unset') {
+            throw new GradleException('CURSEFORGE_TOKEN environment variable not set')
+        }
+    }
+}
+
+// Validate tokens before publishing
+tasks.register('validatePublishTokens') {
+    doLast {
+        def modrinthToken = System.getenv('MODRINTH_TOKEN')
+        def curseforgeToken = System.getenv('CURSEFORGE_TOKEN')
+
+        if (!modrinthToken) {
+            logger.warn('⚠️  MODRINTH_TOKEN not set. Modrinth publishing will be skipped.')
+        } else {
+            logger.lifecycle('✓ MODRINTH_TOKEN is set')
+        }
+
+        if (!curseforgeToken) {
+            logger.warn('⚠️  CURSEFORGE_TOKEN not set. CurseForge publishing will be skipped.')
+        } else {
+            logger.lifecycle('✓ CURSEFORGE_TOKEN is set')
+        }
+    }
+}
