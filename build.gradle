@@ -99,7 +99,7 @@ modrinth {
 task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     apiToken = System.getenv('CURSEFORGE_TOKEN') ?: 'unset'
 
-    def mainFile = upload(000000, jar) // Replace 000000 with your project ID after creation
+    def mainFile = upload(1549701, jar)
     mainFile.changelogType = 'markdown'
     mainFile.changelog = file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'See GitHub releases for changes'
     mainFile.releaseType = 'beta'
