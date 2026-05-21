@@ -1,6 +1,6 @@
-package com.kazuto.resetchunks.util;
+package com.kazuto.regenchunks.util;
 
-import com.kazuto.resetchunks.ResetChunks;
+import com.kazuto.regenchunks.RegenChunks;
 import net.minecraft.world.level.ChunkPos;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class RegionFileHelper {
 
             if (locationData == 0) {
                 // Chunk doesn't exist in this region file
-                ResetChunks.LOGGER.debug("Chunk {} not found in region file {}", chunkPos, regionFilePath.getFileName());
+                RegenChunks.LOGGER.debug("Chunk {} not found in region file {}", chunkPos, regionFilePath.getFileName());
                 return false;
             }
 
@@ -48,7 +48,7 @@ public class RegionFileHelper {
             int sectorCount = locationData & 0xFF;  // Last byte
 
             if (offset == 0 || sectorCount == 0) {
-                ResetChunks.LOGGER.debug("Chunk {} has invalid data in region file", chunkPos);
+                RegenChunks.LOGGER.debug("Chunk {} has invalid data in region file", chunkPos);
                 return false;
             }
 
@@ -67,11 +67,11 @@ public class RegionFileHelper {
             byte[] zeros = new byte[sectorCount * SECTOR_SIZE];
             regionFile.write(zeros);
 
-            ResetChunks.LOGGER.info("Successfully deleted chunk {} from region file {}", chunkPos, regionFilePath.getFileName());
+            RegenChunks.LOGGER.info("Successfully deleted chunk {} from region file {}", chunkPos, regionFilePath.getFileName());
             return true;
 
         } catch (IOException e) {
-            ResetChunks.LOGGER.error("Failed to delete chunk {} from region file {}: {}",
+            RegenChunks.LOGGER.error("Failed to delete chunk {} from region file {}: {}",
                 chunkPos, regionFilePath.getFileName(), e.getMessage());
             return false;
         }
@@ -96,7 +96,7 @@ public class RegionFileHelper {
             return locationData != 0;
 
         } catch (IOException e) {
-            ResetChunks.LOGGER.error("Failed to check chunk {} in region file {}: {}",
+            RegenChunks.LOGGER.error("Failed to check chunk {} in region file {}: {}",
                 chunkPos, regionFilePath.getFileName(), e.getMessage());
             return false;
         }

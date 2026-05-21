@@ -4,13 +4,15 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.neoforged.gradle.userdev' version '7.1.21'
+    id 'com.modrinth.minotaur' version '2.+'
+    id 'net.darkhax.curseforgegradle' version '1.1.18'
 }
 
 version = '1.0.0'
-group = 'com.kazuto.resetchunks'
+group = 'com.kazuto.regenchunks'
 
 base {
-    archivesName = 'resetchunks'
+    archivesName = 'regenchunks'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
@@ -74,4 +76,60 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+// Modrinth Publishing
+modrinth {
+    token = System.getenv('MODRINTH_TOKEN') ?: 'unset'
+    projectId = 'regenchunks' // Will be set after first upload
+    versionNumber = version
+    versionName = "RegenChunks ${version}"
+    versionType = 'release' // or 'beta', 'alpha'
+    uploadFile = jar
+    gameVersions = ['1.21.4']
+    loaders = ['neoforge']
+    changelog = file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'See GitHub releases for changes'
+
+    dependencies {
+        required.project 'neoforge'
+    }
+}
+
+// CurseForge Publishing
+task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    apiToken = System.getenv('CURSEFORGE_TOKEN') ?: 'unset'
+
+    def mainFile = upload(000000, jar) // Replace 000000 with your project ID after creation
+    mainFile.changelogType = 'markdown'
+    mainFile.changelog = file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'See GitHub releases for changes'
+    mainFile.releaseType = 'release'
+    mainFile.addJavaVersion('Java 25')
+    mainFile.addGameVersion('1.21.4')
+    mainFile.addModLoader('NeoForge')
+
+    doFirst {
+        if (apiToken == 'unset') {
+            throw new GradleException('CURSEFORGE_TOKEN environment variable not set')
+        }
+    }
+}
+
+// Validate tokens before publishing
+tasks.register('validatePublishTokens') {
+    doLast {
+        def modrinthToken = System.getenv('MODRINTH_TOKEN')
+        def curseforgeToken = System.getenv('CURSEFORGE_TOKEN')
+
+        if (!modrinthToken) {
+            logger.warn('⚠️  MODRINTH_TOKEN not set. Modrinth publishing will be skipped.')
+        } else {
+            logger.lifecycle('✓ MODRINTH_TOKEN is set')
+        }
+
+        if (!curseforgeToken) {
+            logger.warn('⚠️  CURSEFORGE_TOKEN not set. CurseForge publishing will be skipped.')
+        } else {
+            logger.lifecycle('✓ CURSEFORGE_TOKEN is set')
+        }
+    }
 }

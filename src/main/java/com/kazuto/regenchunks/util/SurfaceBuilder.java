@@ -1,6 +1,6 @@
-package com.kazuto.resetchunks.util;
+package com.kazuto.regenchunks.util;
 
-import com.kazuto.resetchunks.ResetChunks;
+import com.kazuto.regenchunks.RegenChunks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -50,9 +50,9 @@ public class SurfaceBuilder {
                 }
             }
 
-            ResetChunks.LOGGER.debug("Applied basic surface rules to chunk {}", chunk.getPos());
+            RegenChunks.LOGGER.debug("Applied basic surface rules to chunk {}", chunk.getPos());
         } catch (Exception e) {
-            ResetChunks.LOGGER.error("Failed to apply surface rules: {}", e.getMessage());
+            RegenChunks.LOGGER.error("Failed to apply surface rules: {}", e.getMessage());
         }
     }
 
@@ -88,9 +88,9 @@ public class SurfaceBuilder {
                 }
             }
 
-            ResetChunks.LOGGER.debug("Filled chunk {} with flat terrain", chunk.getPos());
+            RegenChunks.LOGGER.debug("Filled chunk {} with flat terrain", chunk.getPos());
         } catch (Exception e) {
-            ResetChunks.LOGGER.error("Failed to fill chunk with terrain: {}", e.getMessage());
+            RegenChunks.LOGGER.error("Failed to fill chunk with terrain: {}", e.getMessage());
         }
     }
 }

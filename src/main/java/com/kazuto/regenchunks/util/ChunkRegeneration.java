@@ -1,6 +1,6 @@
-package com.kazuto.resetchunks.util;
+package com.kazuto.regenchunks.util;
 
-import com.kazuto.resetchunks.ResetChunks;
+import com.kazuto.regenchunks.RegenChunks;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.world.level.ChunkPos;
@@ -19,7 +19,7 @@ public class ChunkRegeneration {
     public static void regenerateChunks(ServerLevel level, ChunkPos centerChunk, int diameter) {
         List<ChunkPos> chunksToRegenerate = calculateChunkArea(centerChunk, diameter);
 
-        ResetChunks.LOGGER.info("Starting regeneration of {} chunks", chunksToRegenerate.size());
+        RegenChunks.LOGGER.info("Starting regeneration of {} chunks", chunksToRegenerate.size());
 
         // Process chunks asynchronously one at a time
         regenerateChunksAsync(level, chunksToRegenerate, 0);
@@ -27,7 +27,7 @@ public class ChunkRegeneration {
 
     private static void regenerateChunksAsync(ServerLevel level, List<ChunkPos> chunks, int index) {
         if (index >= chunks.size()) {
-            ResetChunks.LOGGER.info("Completed regeneration of {} chunks", chunks.size());
+            RegenChunks.LOGGER.info("Completed regeneration of {} chunks", chunks.size());
             return;
         }
 
@@ -58,7 +58,7 @@ public class ChunkRegeneration {
     }
 
     private static CompletableFuture<Void> regenerateChunkAsync(ServerLevel level, ChunkPos chunkPos) {
-        ResetChunks.LOGGER.info("Starting regeneration for chunk {}", chunkPos);
+        RegenChunks.LOGGER.info("Starting regeneration for chunk {}", chunkPos);
 
         ServerChunkCache chunkSource = level.getChunkSource();
 
@@ -70,7 +70,7 @@ public class ChunkRegeneration {
         // Get existing chunk
         LevelChunk existingChunk = chunkSource.getChunk(chunkPos.x(), chunkPos.z(), false);
         if (existingChunk == null) {
-            ResetChunks.LOGGER.warn("Chunk {} not loaded", chunkPos);
+            RegenChunks.LOGGER.warn("Chunk {} not loaded", chunkPos);
             return CompletableFuture.completedFuture(null);
         }
 
@@ -112,9 +112,9 @@ public class ChunkRegeneration {
                             biomeRegistry,
                             net.minecraft.world.level.levelgen.blending.Blender.empty()
                         );
-                        ResetChunks.LOGGER.debug("Applied buildSurface (with deepslate)");
+                        RegenChunks.LOGGER.debug("Applied buildSurface (with deepslate)");
                     } catch (Exception e) {
-                        ResetChunks.LOGGER.warn("buildSurface failed: {}, using fallback", e.getMessage());
+                        RegenChunks.LOGGER.warn("buildSurface failed: {}, using fallback", e.getMessage());
                         SurfaceBuilder.applyBasicSurfaceRules(existingChunk, level);
                     }
                 } else {
@@ -124,25 +124,25 @@ public class ChunkRegeneration {
                 // Apply biome decoration (ores + trees)
                 try {
                     generator.applyBiomeDecoration(level, generatedChunk, level.structureManager());
-                    ResetChunks.LOGGER.debug("Applied biome decoration");
+                    RegenChunks.LOGGER.debug("Applied biome decoration");
 
                     // Remove trees to prevent broken trees at boundaries
                     ChunkCleaner.removeTreesFromChunk(level, existingChunk);
                     ChunkCleaner.removeTreesAtBoundaries(level, chunkPos);
                 } catch (Exception e) {
-                    ResetChunks.LOGGER.warn("Biome decoration failed: {}", e.getMessage());
+                    RegenChunks.LOGGER.warn("Biome decoration failed: {}", e.getMessage());
                 }
 
                 // Update clients
                 ChunkSender.sendChunkToPlayers(level, existingChunk);
 
-                ResetChunks.LOGGER.info("Successfully regenerated chunk {}", chunkPos);
+                RegenChunks.LOGGER.info("Successfully regenerated chunk {}", chunkPos);
 
             } catch (Exception e) {
-                ResetChunks.LOGGER.error("Failed to finalize chunk {}: {}", chunkPos, e.getMessage(), e);
+                RegenChunks.LOGGER.error("Failed to finalize chunk {}: {}", chunkPos, e.getMessage(), e);
             }
         }, level.getServer()).exceptionally(throwable -> {
-            ResetChunks.LOGGER.error("Chunk generation failed: {}", throwable.getMessage());
+            RegenChunks.LOGGER.error("Chunk generation failed: {}", throwable.getMessage());
             return null;
         });
     }

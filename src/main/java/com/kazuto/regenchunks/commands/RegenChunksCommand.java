@@ -1,7 +1,7 @@
-package com.kazuto.resetchunks.commands;
+package com.kazuto.regenchunks.commands;
 
-import com.kazuto.resetchunks.ResetChunks;
-import com.kazuto.resetchunks.util.ChunkRegeneration;
+import com.kazuto.regenchunks.RegenChunks;
+import com.kazuto.regenchunks.util.ChunkRegeneration;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -13,16 +13,16 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 
-public class ResetChunksCommand {
+public class RegenChunksCommand {
     private static final int MIN_DIAMETER = 0;
     private static final int MAX_DIAMETER = 20;
     private static final int REQUIRED_PERMISSION_LEVEL = 2;
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
-            Commands.literal("resetchunks")
+            Commands.literal("regenchunks")
                 .then(Commands.argument("diameter", IntegerArgumentType.integer(MIN_DIAMETER, MAX_DIAMETER))
-                    .executes(ResetChunksCommand::execute)
+                    .executes(RegenChunksCommand::execute)
                 )
         );
     }
@@ -57,13 +57,13 @@ public class ResetChunksCommand {
                 String.format("Successfully regenerated %d chunks!", totalChunks)
             ), true);
 
-            ResetChunks.LOGGER.info("Player {} regenerated {} chunks at position {}",
+            RegenChunks.LOGGER.info("Player {} regenerated {} chunks at position {}",
                 player.getName().getString(), totalChunks, playerChunk);
 
             return totalChunks;
         } catch (Exception e) {
             source.sendFailure(Component.literal("Failed to regenerate chunks: " + e.getMessage()));
-            ResetChunks.LOGGER.error("Error regenerating chunks", e);
+            RegenChunks.LOGGER.error("Error regenerating chunks", e);
             return 0;
         }
     }

@@ -1,6 +1,6 @@
-package com.kazuto.resetchunks.util;
+package com.kazuto.regenchunks.util;
 
-import com.kazuto.resetchunks.ResetChunks;
+import com.kazuto.regenchunks.RegenChunks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -20,7 +20,7 @@ public class ChunkSender {
             var lightEngine = level.getChunkSource().getLightEngine();
             var chunkPos = chunk.getPos();
 
-            ResetChunks.LOGGER.debug("Recalculating lighting for chunk {}", chunkPos);
+            RegenChunks.LOGGER.debug("Recalculating lighting for chunk {}", chunkPos);
 
             // Force lighting recalculation by checking every block
             int baseX = chunkPos.getMinBlockX();
@@ -58,12 +58,12 @@ public class ChunkSender {
 
             for (ServerPlayer player : level.players()) {
                 player.connection.send(packet);
-                ResetChunks.LOGGER.debug("Sent regenerated chunk {} to player {}",
+                RegenChunks.LOGGER.debug("Sent regenerated chunk {} to player {}",
                     chunkPos, player.getName().getString());
             }
 
         } catch (Exception e) {
-            ResetChunks.LOGGER.error("Failed to send chunk update: {}", e.getMessage());
+            RegenChunks.LOGGER.error("Failed to send chunk update: {}", e.getMessage());
         }
     }
 }

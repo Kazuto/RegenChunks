@@ -1,6 +1,6 @@
-package com.kazuto.resetchunks.util;
+package com.kazuto.regenchunks.util;
 
-import com.kazuto.resetchunks.ResetChunks;
+import com.kazuto.regenchunks.RegenChunks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,11 +42,11 @@ public class ChunkCleaner {
 
         for (Entity entity : entitiesToRemove) {
             entity.remove(Entity.RemovalReason.DISCARDED);
-            ResetChunks.LOGGER.debug("Removing entity: {} at {}", entity.getType(), entity.blockPosition());
+            RegenChunks.LOGGER.debug("Removing entity: {} at {}", entity.getType(), entity.blockPosition());
         }
 
         if (!entitiesToRemove.isEmpty()) {
-            ResetChunks.LOGGER.info("Removed {} entities from chunk {}", entitiesToRemove.size(), chunkPos);
+            RegenChunks.LOGGER.info("Removed {} entities from chunk {}", entitiesToRemove.size(), chunkPos);
         }
     }
 
@@ -69,9 +69,9 @@ public class ChunkCleaner {
                 }
             }
 
-            ResetChunks.LOGGER.debug("Cleared all blocks in chunk {}", chunk.getPos());
+            RegenChunks.LOGGER.debug("Cleared all blocks in chunk {}", chunk.getPos());
         } catch (Exception e) {
-            ResetChunks.LOGGER.error("Failed to clear chunk blocks: {}", e.getMessage());
+            RegenChunks.LOGGER.error("Failed to clear chunk blocks: {}", e.getMessage());
         }
     }
 
@@ -101,10 +101,10 @@ public class ChunkCleaner {
             }
 
             if (removed > 0) {
-                ResetChunks.LOGGER.info("Removed {} tree blocks from chunk {}", removed, chunk.getPos());
+                RegenChunks.LOGGER.info("Removed {} tree blocks from chunk {}", removed, chunk.getPos());
             }
         } catch (Exception e) {
-            ResetChunks.LOGGER.error("Failed to remove trees: {}", e.getMessage());
+            RegenChunks.LOGGER.error("Failed to remove trees: {}", e.getMessage());
         }
     }
 
@@ -161,10 +161,10 @@ public class ChunkCleaner {
             }
 
             if (removed > 0) {
-                ResetChunks.LOGGER.info("Removed {} boundary tree blocks", removed);
+                RegenChunks.LOGGER.info("Removed {} boundary tree blocks", removed);
             }
         } catch (Exception e) {
-            ResetChunks.LOGGER.error("Failed to remove boundary trees: {}", e.getMessage());
+            RegenChunks.LOGGER.error("Failed to remove boundary trees: {}", e.getMessage());
         }
     }
 }
