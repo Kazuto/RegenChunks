@@ -97,7 +97,16 @@ public class ChunkRegeneration {
                     generatedChunk
                 );
 
-                // Apply surface (grass/dirt)
+                // Try to apply decoration (ores, features)
+                // This requires WorldGenLevel, so we try ServerLevel and catch if it fails
+                try {
+                    generator.applyBiomeDecoration(level, generatedChunk, level.structureManager());
+                    ResetChunks.LOGGER.debug("Applied biome decoration (ores, features) to chunk {}", chunkPos);
+                } catch (Exception e) {
+                    ResetChunks.LOGGER.warn("Could not apply biome decoration - ores and features will be missing: {}", e.getMessage());
+                }
+
+                // Apply surface rules (grass/dirt on top)
                 applySurfaceRules(existingChunk, level);
 
                 // Update clients
