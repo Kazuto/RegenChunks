@@ -84,9 +84,9 @@ modrinth {
     projectId = 'regenchunks' // Will be set after first upload
     versionNumber = version
     versionName = "RegenChunks ${version}"
-    versionType = 'release' // or 'beta', 'alpha'
+    versionType = 'beta' // 'release', 'beta', or 'alpha'
     uploadFile = jar
-    gameVersions = ['1.21.4']
+    gameVersions = ['26.1.2']
     loaders = ['neoforge']
     changelog = file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'See GitHub releases for changes'
 
@@ -102,9 +102,9 @@ task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge)
     def mainFile = upload(000000, jar) // Replace 000000 with your project ID after creation
     mainFile.changelogType = 'markdown'
     mainFile.changelog = file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'See GitHub releases for changes'
-    mainFile.releaseType = 'release'
+    mainFile.releaseType = 'beta'
     mainFile.addJavaVersion('Java 25')
-    mainFile.addGameVersion('1.21.4')
+    mainFile.addGameVersion('26.1.2')
     mainFile.addModLoader('NeoForge')
 
     doFirst {
