@@ -13,8 +13,8 @@ A NeoForge mod that allows server operators to regenerate chunks in Minecraft, p
 
 ## Requirements
 
-- **Minecraft Version:** 26.1.x
-- **Modloader:** NeoForge 26.1+
+- **Minecraft Version:** 26.1.2+
+- **Modloader:** NeoForge 26.1.3.60-beta+
 - **Side:** Server-side (works on dedicated servers and single-player)
 
 ## Installation
