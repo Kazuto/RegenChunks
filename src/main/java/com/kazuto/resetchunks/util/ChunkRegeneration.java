@@ -121,10 +121,13 @@ public class ChunkRegeneration {
                     applySurfaceRules(existingChunk, level);
                 }
 
-                // Apply features (ores, etc.)
+                // Apply features (ores underground, but also trees on surface)
                 try {
                     generator.applyBiomeDecoration(level, generatedChunk, level.structureManager());
                     ResetChunks.LOGGER.debug("Applied biome decoration for chunk {}", chunkPos);
+
+                    // Remove surface features (trees, flowers) but keep underground ores
+                    removeSurfaceFeatures(existingChunk, level);
                 } catch (Exception e) {
                     ResetChunks.LOGGER.warn("Biome decoration failed: {}", e.getMessage());
                 }
@@ -330,6 +333,58 @@ public class ChunkRegeneration {
 
         } catch (Exception e) {
             ResetChunks.LOGGER.error("Failed to clear chunk blocks: {}", e.getMessage());
+        }
+    }
+
+    private static void removeSurfaceFeatures(LevelChunk chunk, ServerLevel level) {
+        try {
+            var air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+            int baseX = chunk.getPos().x() << 4;
+            int baseZ = chunk.getPos().z() << 4;
+            int removed = 0;
+
+            // Find surface level for each column and remove vegetation above it
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    // Find the surface (first solid block from top)
+                    int surfaceY = -1;
+                    for (int y = level.getMaxY() - 1; y >= level.getMinY(); y--) {
+                        BlockPos pos = new BlockPos(baseX + x, y, baseZ + z);
+                        var state = chunk.getBlockState(pos);
+                        if (!state.isAir() && state.isSolid()) {
+                            surfaceY = y;
+                            break;
+                        }
+                    }
+
+                    if (surfaceY == -1) continue;
+
+                    // Remove logs, leaves, flowers, and other vegetation above surface
+                    for (int y = surfaceY + 1; y < level.getMaxY(); y++) {
+                        BlockPos pos = new BlockPos(baseX + x, y, baseZ + z);
+                        var state = chunk.getBlockState(pos);
+
+                        if (state.is(net.minecraft.tags.BlockTags.LOGS) ||
+                            state.is(net.minecraft.tags.BlockTags.LEAVES) ||
+                            state.is(net.minecraft.tags.BlockTags.FLOWERS) ||
+                            state.is(net.minecraft.tags.BlockTags.SAPLINGS) ||
+                            state.is(net.minecraft.world.level.block.Blocks.TALL_GRASS) ||
+                            state.is(net.minecraft.world.level.block.Blocks.SHORT_GRASS) ||
+                            state.is(net.minecraft.world.level.block.Blocks.FERN) ||
+                            state.is(net.minecraft.world.level.block.Blocks.LARGE_FERN)) {
+                            chunk.setBlockState(pos, air, 0);
+                            removed++;
+                        }
+                    }
+                }
+            }
+
+            if (removed > 0) {
+                ResetChunks.LOGGER.debug("Removed {} surface feature blocks from chunk {}", removed, chunk.getPos());
+            }
+
+        } catch (Exception e) {
+            ResetChunks.LOGGER.error("Failed to remove surface features: {}", e.getMessage());
         }
     }
 }
