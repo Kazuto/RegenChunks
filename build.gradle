@@ -78,23 +78,6 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-// Modrinth Publishing
-modrinth {
-    token = System.getenv('MODRINTH_TOKEN') ?: 'unset'
-    projectId = 'regenchunks' // Will be set after first upload
-    versionNumber = version
-    versionName = "RegenChunks ${version}"
-    versionType = 'beta' // 'release', 'beta', or 'alpha'
-    uploadFile = jar
-    gameVersions = ['26.1.2']
-    loaders = ['neoforge']
-    changelog = file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'See GitHub releases for changes'
-
-    dependencies {
-        required.project 'neoforge'
-    }
-}
-
 // CurseForge Publishing
 task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     apiToken = System.getenv('CURSEFORGE_TOKEN') ?: 'unset'
